@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 
 DEBUG = False
 
+# To run Mid-Rise, set requirement=1
+# To run Mid-Tread, set requirement=2
+# To run SNR, set requirement=3
+requirement=3
 
 def UniformQuantizer(in_val, n_bits, xmax, m):
     delta = 2 * xmax / (2 ** n_bits)
@@ -45,14 +49,53 @@ def runAll(val, bits, xmax, m):
     draw_dequantizer(val, dequantized)
 
 bits = 4
-val = 6.0
-x = np.arange(-val, val+0.01, 0.01)
 
 # Mid-Rise
-m = 0
-runAll(x, bits, val, m)
+if(requirement==1):
+    m = 0
+    val = 6.0
+    x = np.arange(-val, val+0.01, 0.01)
+    runAll(x, bits, val, m)
 
 # Mid-Tread
-m = 1
-runAll(x, bits, val, m)
+if(requirement==2):
+    m = 1
+    val = 6.0
+    x = np.arange(-val, val+0.01, 0.01)
+    runAll(x, bits, val, m)
+
+if(requirement==3):
+    m = 0
+    val=5
+    n=np.arange(2,9,1)
+    bits=n[:,np.newaxis]
+    x=np.random.uniform(-val,val+0.01,10000)
+
+    # Quantizer
+    indices = UniformQuantizer(x, bits, val, m)
+    # Dequantizer
+    dequantized = UniformDequantizer(indices, bits, val, m)
+
+    if DEBUG:
+        plt.scatter(np.linspace(-5,5.01,10000), x, color='blue', s=0.1)
+        plt.show()
+
+        plt.scatter(np.linspace(-5,5.01,10000), dequantized, color='blue', s=0.1)
+        plt.show()
+    
+
+    p = np.mean(x**2)
+    # Calculate SNR
+    snr_theo = 20*np.log(p*3*(2**(2*n))/(val**2))
+
+    qp = np.mean((x-dequantized)**2, axis=1)
+    snr_act= 20*np.log(p/qp)
+
+    plt.plot(n, snr_theo, color='red', label='Theoretical')
+    plt.title('Theoretical SNR')
+    plt.show()
+
+    plt.plot(n, snr_act, color='blue', label='Actual')
+    plt.title('Actual SNR')
+    plt.show()
 
