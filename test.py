@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+DEBUG = False
+
 
 def UniformQuantizer(in_val, n_bits, xmax, m):
     delta = 2 * xmax / (2 ** n_bits)
@@ -16,28 +18,41 @@ def UniformDequantizer(q_ind, n_bits, xmax, m):
 
 
 def draw_quantizer(x, y):
-    plt.step(x, y, where='post',color='blue')
+    plt.step(x, y, where='post', color='blue')
     plt.grid(axis='x', color='0.95')
     plt.title('Indices')
     plt.show()
 
 
 def draw_dequantizer(x, y):
-    plt.step(x, y, where='post',color='blue')
+    plt.step(x, y, where='post', color='blue')
     plt.plot(x, x, color='red')
     plt.grid(axis='x', color='0.95')
     plt.title('Dequantized Values')
     plt.show()
 
+def runAll(val, bits, xmax, m):
+    # Quantizer
+    indices = UniformQuantizer(val, bits, xmax, m)
+    if DEBUG:
+        print(indices)
+    draw_quantizer(val, indices)
 
-m = 0
+    # Dequantizer
+    dequantized = UniformDequantizer(indices, bits, xmax, m)
+    if DEBUG:
+        print(dequantized)
+    draw_dequantizer(val, dequantized)
+
 bits = 4
-val=6.0
+val = 6.0
 x = np.arange(-val, val+0.01, 0.01)
-xmax=val
-print(xmax)
-indices = UniformQuantizer(x, bits, xmax, m)
-print(indices)
-draw_quantizer(x, indices)
-dequantized = UniformDequantizer(indices, bits, xmax, m)
-draw_dequantizer(x, dequantized)
+
+# Mid-Rise
+m = 0
+runAll(x, bits, val, m)
+
+# Mid-Tread
+m = 1
+runAll(x, bits, val, m)
+
