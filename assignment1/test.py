@@ -114,6 +114,9 @@ if(requirement == 3):  # 4a)
 
 ##############################
 # author : @AbdelazizSalah
+# 5- Non-Uniform Quantizer
+# 6- Compander
+# date : 2023-3-13
 ##############################
 
 
