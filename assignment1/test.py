@@ -1,7 +1,9 @@
+import random
+from symbol import and_expr
 import numpy as np
 import matplotlib.pyplot as plt
 
-DEBUG = True
+DEBUG = False
 
 # To run Mid-Rise, set requirement=1
 # To run Mid-Tread, set requirement=2
@@ -118,16 +120,35 @@ if(requirement == 3):  # 4a)
 # 6- Compander
 # date : 2023-3-13
 ##############################
+# this is a utility function used to generate array contains negatives and positives with  probability 0.5
+
+
+def generatingRandomNumbers(numOfRepeat):
+    negatives = []
+    for i in range(numOfRepeat):
+        rndVal = random.randint(0, 1)
+        if(rndVal == 1):
+            negatives.append(1)
+        else:
+            negatives.append(-1)
+    return negatives
 
 
 def requirement5():
     # generate random signal with 10000 samples with values =  e^(-x)
-    generatedSamples = np.exp(-np.random.uniform(-5, 5.01, 10000))
+    sz = 100000
+    generatedSamples = np.random.exponential(scale=1.0, size=sz)
+    negatives = generatingRandomNumbers(sz)
+    generatedSamples *= negatives
+    print(generatedSamples)
     if DEBUG:
         print("Generated Samples: ", generatedSamples)
     # using xmax = 5 and m = 0
     m = 0
-    xmax = 5
+    # ageb el max absolut
+    print(min(generatedSamples))
+    print(max(generatedSamples))
+    xmax = abs(max(max(generatedSamples), min(generatedSamples), key=abs))
     # number of bits -> req 4d) repeat for n = 2, 3, 4, 5, 6, 7, 8
     n = np.arange(2, 9, 1)
     bits = n[:, np.newaxis]
@@ -152,11 +173,14 @@ def requirement5():
     if DEBUG:
         print("Signal Power: ", signalPower, end='\n------------------\n')
         print("Noise Power: ", noisePower, end='\n------------------\n')
-    actualSNR = 20 * np.log10(signalPower / noisePower)
-    theoriticalSNR = 20 * np.log10(signalPower * 3 * (2**(2*n)) / (xmax**2))
+    # actualSNR = 20 * np.log10(signalPower / noisePower)
+    # theoriticalSNR = 20 * np.log10(signalPower * 3 * (2**(2*n)) / (xmax**2))
+    actualSNR = 10 * np.log10(signalPower / noisePower)
+    theoriticalSNR = 10 * np.log10(signalPower * 3 * (2**(2*n)) / (xmax**2))
     if DEBUG:
         print("Theoritical SNR: ", theoriticalSNR,
               end='\n------------------\n')
+
         print("Actual SNR: ", actualSNR, end='\n------------------\n')
 
     # drawing the results on the same plot
@@ -172,12 +196,15 @@ if(requirement == 5):
 
 # in this requirement we need to quantize the non-uniform signal using non-uniform u-law quantizer
 if(requirement == 6):
-    generatedSamples = np.exp(-np.random.uniform(-5, 5.01, 5))
+    sz = 5
+    generatedSamples = np.random.exponential(scale=1.0, size=sz)
+    negatives = generatingRandomNumbers(sz)
+    generatedSamples *= negatives
     if DEBUG:
         print("Generated Samples: ", generatedSamples)
     # using xmax = 5 and m = 0
     m = 0
-    xmax = 5
+    xmax = abs(max(max(generatedSamples), min(generatedSamples), key=abs))
     # number of bits -> req 4d) repeat for n = 2, 3, 4, 5, 6, 7, 8
     n = np.arange(2, 9, 1)
     bits = n[:, np.newaxis]
@@ -189,14 +216,14 @@ if(requirement == 6):
     # compressing the signal before inserting it to the quantizer
     # u-law equation -> quantizerInput = (sign) ln(1 + u*normalized(signalInput))/ln(1+u)
     # where normalized(signalInput) = signalInput/max(signalInput)
-    quantizerInput = [np.log(1 + u[i]*generatedSamples / np.max(generatedSamples)) / np.log(1+u[i])
+    quantizerInput = [np.log(1 + u[i]*generatedSamples / np.max(generatedSamples)) / np.log(1+u[i])  # 2d
                       if u[i] != 0 else generatedSamples for i in range(0, 4)]
     if DEBUG:
         # print(quantizerInput, sep='\n--------\n')
         pass
 
     # Pass each sample through the quantizer
-    quantized = [UniformQuantizer(
+    quantized = [UniformQuantizer(  # 3d
         quantizerInput[i], bits, xmax, m) for i in range(0, 4)]
 
     # Pass it through the dequantizer
@@ -204,17 +231,25 @@ if(requirement == 6):
 
     # expanding the result of the dequantizer
     # u-law equation -> dequantizerOutput = (sign)(1+u)^dequantizerInput - 1 / u
-    dequantizerOutput = [(1+u[i])**dequantized - 1 / u[i]
-                         if u[i] != 0 else dequantized for i in range(0, 4)]
+    # dequantizerOutput = [(1+u[i])**dequantized - 1 / u[i]
+    #                      if u[i] != 0 else dequantized for i in range(0, 4)]
+
+    dequantizerOutput = []
+    for i in range(0, 4):
+        dequantizerOutput.append((1+u[i])**dequantized[i] -
+                                 1 / u[i] if u[i] != 0 else dequantized[i])
+
     if DEBUG:
         print(dequantizerOutput, sep='\n--------\n')
 
-    normalizedInput = generatedSamples / np.max(generatedSamples)
+    normalizedInput = generatedSamples / np.max(generatedSamples)  # xmax
     # TODO: this part still not correct, I need to draw on the same plot the results for different u values
     # printing the results
+    # print(kiro.shape)
+    # for j in range(0, 7):
     for i in range(0, 4):
-        plt.plot(normalizedInput,
-                 dequantizerOutput[i][0][0], label='u = ' + str(u[i]))
+        plt.scatter(normalizedInput,
+                    dequantizerOutput[i][0], label='u = ' + str(u[i]))
 
     plt.title('Dequantizer Output')
     plt.legend()
