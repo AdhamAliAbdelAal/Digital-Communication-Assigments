@@ -22,6 +22,8 @@ for i in range(0, 4):
     dequantized = UniformDequantizer(quantized, noOfBits, xmax, 0)
 
     # expanding the result
+    # denormalizing the result
+    dequantized *= xmax
     expanded = expanding_block(dequantized, u[i])
 
     # evaluating the SNR
