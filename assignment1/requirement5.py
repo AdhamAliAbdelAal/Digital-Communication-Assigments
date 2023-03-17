@@ -2,7 +2,7 @@ from utilities import rand_exp, UniformQuantizer, UniformDequantizer, getPower, 
 
 # generating the samples
 generatedSamples = rand_exp(100000)
-# generatedSamples = np.array([-5, -1, 1, 4, 10, -10, 6, 2, 1, 0])
+
 # getting the x_max for the samples
 xmax = getMax(generatedSamples)
 noOfBits = np.arange(2, 9, 1)
@@ -21,7 +21,7 @@ noise = generatedSamples - dequantized
 noisePower = getPower(noise, axis=1)
 actualSNR = calc_SNR(signalPower=signalPower, noisePower=noisePower)
 actualSNR = 10 * np.log10(actualSNR)
-theoriticalSNR = ((3 * (L**2) / (xmax**2)) * np.mean(generatedSamples**2))
+theoriticalSNR = ((3 * (L**2) / (xmax**2)) * signalPower)
 theoriticalSNR = 10 * np.log10(theoriticalSNR)
 
 # plotting the results on the same plot

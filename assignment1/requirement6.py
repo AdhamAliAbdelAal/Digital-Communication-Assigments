@@ -8,7 +8,8 @@ noOfBits = np.arange(2, 9, 1)
 L = 2 ** noOfBits
 noOfBits = noOfBits[:, np.newaxis]
 u = [0, 5, 100, 200]
-colors = ['red', 'green', 'blue', 'yellow']
+colors = ['red', 'green', 'blue', 'yellow',
+          'black', 'orange', 'purple', 'pink']
 # applying the compression block
 normalizedInput = normalizeSignal(generatedSamples, xmax)
 for i in range(0, 4):
@@ -29,15 +30,14 @@ for i in range(0, 4):
     noisePower = getPower(noise, axis=1)
     actualSNR = calc_SNR(signalPower=signalPower, noisePower=noisePower)
     actualSNR = 10 * np.log10(actualSNR)
-    theoriticalSNR = ((3 * (L**2) / (xmax**2)) *
-                      signalPower)
+    theoriticalSNR = ((3 * (L**2) / (np.log(1 + u[i])) ** 2))
     theoriticalSNR = 10 * np.log10(theoriticalSNR)
 
     # plotting the results on the same plot
     plt.plot(noOfBits, theoriticalSNR,
              color=colors[i], label='u = ' + str(u[i]))
     plt.plot(noOfBits, actualSNR,
-             color=colors[(i + 1) % 4], label='Actual')
+             color=colors[(i + 4) % 8], label='Actual u =' + str(u[i]))
 plt.title('Actual SNR(blue) vs Theoretical SNR(red) (in dB)')
-plt.legend()
+plt.legend(loc='upper left')
 plt.show()

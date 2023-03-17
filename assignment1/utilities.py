@@ -23,7 +23,7 @@ def UniformQuantizer(in_val, n_bits, xmax, m):
     delta = 2 * xmax / (2 ** n_bits)
     indices = (np.floor(in_val / delta) if m ==  # depending on m, we either mid-raise or mid-tread
                0 else np.round(in_val / delta)-1) + np.round(xmax/delta).astype(int)
-    print(indices,np.round((xmax-delta/2)/delta))
+    print(indices, np.round((xmax-delta/2)/delta))
     indices[indices < 0] = 0
     return indices
 
@@ -31,7 +31,7 @@ def UniformQuantizer(in_val, n_bits, xmax, m):
 # it returns the signal from the encoded signal to the original amplitudes after quantization.
 def UniformDequantizer(q_ind, n_bits, xmax, m):
     delta = 2 * xmax / (2 ** n_bits)
-    if(m==1):
+    if(m == 1):
         q_ind = q_ind + 1
     out_val = (q_ind - xmax/delta) * delta
     return out_val if m == 1 else out_val + delta/2
@@ -144,7 +144,8 @@ def generatingRandomNumbers(numOfRepeat):
 # this function is a utility function used to geenerate a random exponential signal.
 # it take the size of the sample you want to generate.
 def rand_exp(sz):
-    generatedSamples = np.random.exponential(scale=1.0, size=sz)
+    generatedSamples = 1 / \
+        np.random.exponential(scale=1.0, size=sz)  # 1/ e(X) = e(-X)
     negatives = generatingRandomNumbers(sz)
     generatedSamples *= negatives
     return generatedSamples
