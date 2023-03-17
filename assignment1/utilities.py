@@ -1,5 +1,4 @@
 import random
-from symbol import and_expr
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -22,14 +21,18 @@ requirement = 9
 
 def UniformQuantizer(in_val, n_bits, xmax, m):
     delta = 2 * xmax / (2 ** n_bits)
-    indices = ((np.floor(in_val / delta) if m ==  # depending on m, we either mid-raise or mid-tread
-               0 else np.round(in_val / delta)) + xmax/delta).astype(int)
+    indices = (np.floor(in_val / delta) if m ==  # depending on m, we either mid-raise or mid-tread
+               0 else np.round(in_val / delta)-1) + np.round(xmax/delta).astype(int)
+    print(indices,np.round((xmax-delta/2)/delta))
+    indices[indices < 0] = 0
     return indices
 
 
 # it returns the signal from the encoded signal to the original amplitudes after quantization.
 def UniformDequantizer(q_ind, n_bits, xmax, m):
     delta = 2 * xmax / (2 ** n_bits)
+    if(m==1):
+        q_ind = q_ind + 1
     out_val = (q_ind - xmax/delta) * delta
     return out_val if m == 1 else out_val + delta/2
 
@@ -63,7 +66,7 @@ def runAll(val, bits, xmax, m):
     draw_dequantizer(val, dequantized)
 
 
-bits = 4
+bits = 2
 
 # # Mid-Rise
 # if(requirement == 1):  # 3a)

@@ -26,9 +26,9 @@ qp = np.mean((x-dequantized)**2, axis=1)
 snr_act = 20*np.log(p/qp)  # in db
 
 plt.plot(n, snr_theo, color='red', label='Theoretical')
-plt.title('Theoretical SNR')
-plt.show()
+
 
 plt.plot(n, snr_act, color='blue', label='Actual')
-plt.title('Actual SNR')
+plt.title('SNRs')
+plt.legend()
 plt.show()
