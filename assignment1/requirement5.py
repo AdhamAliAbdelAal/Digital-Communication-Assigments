@@ -21,7 +21,7 @@ noise = generatedSamples - dequantized
 noisePower = getPower(noise, axis=1)
 actualSNR = calc_SNR(signalPower=signalPower, noisePower=noisePower)
 actualSNR = 10 * np.log10(actualSNR)
-theoriticalSNR = ((3 * (L**2) / (xmax**2)) * signalPower)
+theoriticalSNR = ((3 * (L**2) * signalPower / (xmax**2)))
 theoriticalSNR = 10 * np.log10(theoriticalSNR)
 
 # plotting the results on the same plot
