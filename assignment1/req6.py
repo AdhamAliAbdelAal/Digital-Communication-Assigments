@@ -30,17 +30,19 @@ out = (np.random.random(size=len(array_probabilities)) > array_probabilities).as
 out[out==0]=-1
 x=x*out
 normalizedInput = x/xmax
-u=np.array([0.000000001, 5.0, 100.0, 200.0])
+u=np.array([ 0.000000000001,5.0, 100.0, 200.0])
 n_bits=np.array([2,3,4,5,6,7,8])
 n_bits=n_bits[:, np.newaxis]
 colors = ['red', 'blue', 'green', 'black']
 for i in range(0, 4):
     compressed = compressing_block(normalizedInput, u[i])
-    quantized = UniformQuantizer(compressed, n_bits, xmax, 0)
-    dequantized = UniformDequantizer(quantized, n_bits, xmax, 0)
+    ymax=np.max(np.abs(compressed))
+    quantized = UniformQuantizer(compressed, n_bits, ymax, 0)
+    dequantized = UniformDequantizer(quantized, n_bits, ymax, 0)
     expanded = expanding_block(dequantized, u[i])
-    signal_power = np.mean(normalizedInput**2)
-    noise = normalizedInput - expanded
+    denormalized_expanded = expanded * xmax
+    signal_power = np.mean(x**2)
+    noise = x - denormalized_expanded
     noise_power = np.mean(noise**2, axis=1)
     actual_snr = signal_power/noise_power
     actual_snr = 10 * np.log10(actual_snr)
