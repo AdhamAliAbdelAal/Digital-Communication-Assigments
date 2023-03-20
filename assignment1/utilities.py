@@ -66,7 +66,7 @@ def runAll(val, bits, xmax, m):
     draw_dequantizer(val, dequantized)
 
 
-bits = 2
+bits = 3
 
 # # Mid-Rise
 # if(requirement == 1):  # 3a)
