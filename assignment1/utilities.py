@@ -141,30 +141,95 @@ def generatingRandomNumbers(numOfRepeat):
     return negatives
 
 
+def calc_SNR(samples, q_levels, n_bits, u, max_value):
+    """
+    calculate theoretical and experimental SNR
+    Parameters:
+    samples : vector of function samples 
+    q_levels : vector of quantized samples
+    n_bits : number of bits to decode the level
+    u : expanding coefficient
+    max_value : max value in samples
+    return:
+    SNR_theoretical : calculate the SNR with the equation
+    SNR_experimental : calculate the SNR from the real values
+    """
+    error_diff = np.subtract(samples, q_levels)
+    input_power = np.mean(np.square(samples))
+    if(u > 0):
+        SNR_theoretical = (3 * (1 << n_bits)**2) / (np.log(1 + u) ** 2)
+    else:  # uniform quantization
+        SNR_theoretical = (3 * (1 << n_bits)**2 * input_power) / max_value**2
+    SNR_experimental = input_power / np.mean(np.square(error_diff))
+    return SNR_theoretical, SNR_experimental
+
+
 # this function is a utility function used to geenerate a random exponential signal.
 # it take the size of the sample you want to generate.
-def rand_exp(sz):
-    generatedSamples = np.random.exponential(scale=1.0, size=sz)  # 1/ e(X) = e(-X)
-    #print("adhammmmmmmmmmmmmmmmmmmmm",np.min(generatedSamples), np.max(generatedSamples))
-    negatives = generatingRandomNumbers(sz)
-    generatedSamples *= negatives
-    return generatedSamples
-
-
-def expanding_block(samples, u):
-    return (1 / u) * (np.power(1 + u, samples) - 1) if u != 0 else samples
+def rand_exp(sz, max_value=5):
+    # generatedSamples = np.random.exponential(
+    #     scale=1.0, size=sz)  # 1/ e(X) = e(-X)
+    # negatives = generatingRandomNumbers(sz)
+    # generatedSamples *= negatives
+    # return generatedSamples
+    out_vect = np.random.exponential(1, sz)
+    out_vect /= np.amax(out_vect)
+    signs = np.random.choice([-1, 1], size=(sz,), p=[1./2, 1./2])
+    out_vect *= (max_value * signs)
+    return out_vect
 
 
 def compressing_block(samples, u):
-    return np.log(1 + u * np.abs(samples)) / np.log(1.0 + u) if u != 0 else samples
+    """
+    this expanding samples with log function to apply non-uniform quantizer
+    Parameters:
+    samples : vector of function samples
+    max_value : max value in samples
+    u : expanding coefficient
+    return:
+    y : vector of expanding samples
+    """
+    y = np.zeros_like(samples)
+    if(u > 0):
+        y = np.sign(samples) * np.log(1 + u *
+                                      np.absolute(samples)) / np.log(1 + u)
+    else:
+        y = np.copy(samples)
+    return y
+
+
+def expanding_block(expanded_samples, u):
+    """
+    this compressing expanded samples to it's initial values
+    Parameters:
+    expanded_samples : vector of function expanded samples
+    max_value : max value in samples
+    u : expanding coefficient
+    return:
+    x : vector of real samples' value
+    """
+    x = np.zeros_like(expanded_samples)
+    if(u > 0):
+        x = ((1 + u) ** np.absolute(expanded_samples) - 1) / u
+        x *= (np.sign(expanded_samples))
+    else:
+        x = np.copy(expanded_samples)
+    return x
+
+# def expanding_block(samples, u):
+#     return (1 / u) * (np.power(1 + u, samples) - 1) if u != 0 else samples
+
+
+# def compressing_block(samples, u):
+#     return np.log(1 + u * np.abs(samples)) / np.log(1.0 + u) if u != 0 else samples
 
 
 def normalizeSignal(signal, xmax):
     return signal / xmax
 
 
-def calc_SNR(signalPower, noisePower):
-    return signalPower / noisePower
+# def calc_SNR(signalPower, noisePower):
+#     return signalPower / noisePower
 
 
 def getPower(signal, axis=0):
