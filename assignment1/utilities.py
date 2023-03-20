@@ -152,7 +152,7 @@ def rand_exp(sz):
 
 
 def expanding_block(samples, u):
-    return (1 / u) * (np.power(1 + u, samples) - 1) if u != 0 else samples
+    return (1 / u) * (np.power(1 + u, abs(samples)) - 1) if u != 0 else samples
 
 
 def compressing_block(samples, u):
