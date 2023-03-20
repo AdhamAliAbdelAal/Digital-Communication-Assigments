@@ -1,5 +1,5 @@
 from utilities import np, UniformDequantizer, UniformQuantizer, DEBUG, plt
-m = 0
+m = 1
 val = 5
 n = np.arange(2, 9, 1)
 bits = n[:, np.newaxis]
