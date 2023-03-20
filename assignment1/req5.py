@@ -3,7 +3,12 @@ m = 0
 val = 5
 n = np.arange(2, 9, 1)
 bits = n[:, np.newaxis]
-x = np.random.uniform(-val, val+0.01, 10000)
+x= np.random.exponential(1.0,10000)
+xmax = np.max(x)
+array_probabilities=np.ones(10000)*0.5
+out = (np.random.random(size=len(array_probabilities)) > array_probabilities).astype(int)
+out[out==0]=-1
+x=x*out
 
 # Quantizer
 indices = UniformQuantizer(x, bits, val, m)
