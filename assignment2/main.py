@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-T=10
+T=3
 
 def random_bit_stream_generator():
     return np.random.randint(0, 2, 3)
@@ -11,7 +11,7 @@ def pulse_shaping_filter(bit_stream,T):
     return temp
 
 def channel(signal):
-    return signal+np.random.normal(0, .01, len(signal))
+    return signal+np.random.normal(0, .1, len(signal))
 
 def receive_filter(signal,T):
     matched_filter=np.ones(T)
