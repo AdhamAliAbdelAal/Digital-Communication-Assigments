@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 T=5
 
 def random_bit_stream_generator():
-    return np.random.randint(0, 2, 10)
+    return np.random.randint(0, 2, 5)
 
 def pulse_shaping_filter(bit_stream,T):
     temp= np.repeat(bit_stream, T)
@@ -11,7 +11,36 @@ def pulse_shaping_filter(bit_stream,T):
     return temp
 
 def channel(signal):
-    return signal+np.random.normal(0, 1.0, len(signal))
+    return signal+np.random.normal(0, 0.09, len(signal))
+
+def draw(signal,title):
+    plt.title(title)
+    if(title=="Input Signal" or title=="Output"):
+        plt.plot(signal)
+    else:
+        plt.plot(signal)
+    plt.show()
+
+
+def draw_after_matched_filter(signal,title):
+    size=len(signal)//T
+    samples=np.zeros(len(signal))
+    for i in range(0,size):
+        samples[(i+1)*T-1]=signal[(i+1)*T-1]
+    samples[samples==0]=np.nan
+    plt.title(title)
+    plt.stem(samples,linefmt='grey', markerfmt='D',label="Samples")
+    plt.plot(signal,c="g",label="Signal")
+    plt.legend(loc="upper right")
+    plt.show()
+
+def draw_filter(filter,title):
+    plt.title(title.capitalize()+" Filter")
+    if(title=="impulse"):
+        plt.stem(filter)
+    else:
+        plt.plot(filter)
+    plt.show()
 
 def receive_filter(signal,T,filter_type="matched"):
     if filter_type=="matched":
@@ -21,6 +50,7 @@ def receive_filter(signal,T,filter_type="matched"):
         matched_filter[0]=1
     elif filter_type=="linear":
         matched_filter=np.linspace(0,1,T)*np.square(3)
+    draw_filter(matched_filter,filter_type)
     after_matched_filter=np.convolve(signal,matched_filter)
     return after_matched_filter
 
@@ -28,17 +58,12 @@ def sampling(signal,T):
     size=len(signal)//T
     samples=np.zeros(size)
     for i in range(0,size):
-        samples[i]=signal[(i+1)*T]
+        samples[i]=signal[(i+1)*T-1]
     return np.sign(samples)
 
 def decode(signal):
     signal[signal<0]=0
-    return signal
-
-def draw(signal,title):
-    plt.title(title)
-    plt.plot(signal)
-    plt.show()
+    return signal.astype(int)
 
 
 # Bit stream generator
@@ -54,8 +79,8 @@ after_channel=channel(after_pulse_shape)
 draw(after_channel,"Channel")
 
 # Receive filter
-after_receive_filter=receive_filter(after_channel,T,"linear")
-draw(after_receive_filter,"Receive Filter")
+after_receive_filter=receive_filter(after_channel,T,"matched")
+draw_after_matched_filter(after_receive_filter,"Signal After Receive Filter")
 
 # Sampling
 after_sampling=sampling(after_receive_filter,T)
@@ -63,9 +88,10 @@ print(after_sampling)
 
 # Decode
 output=decode(after_sampling)
-draw(output,"Output")
-
-print(output)
 # Error
 error=np.sum(output!=bit_stream)
 print("Error: ",error)
+
+
+output=pulse_shaping_filter(output,T)
+draw(output,"Output")
