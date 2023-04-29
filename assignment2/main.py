@@ -1,7 +1,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from math import erfc
 T=5
-
+N0=0.09
 def random_bit_stream_generator():
     return np.random.randint(0, 2, 5)
 
@@ -11,7 +12,7 @@ def pulse_shaping_filter(bit_stream,T):
     return temp
 
 def channel(signal):
-    return signal+np.random.normal(0, 0.09, len(signal))
+    return signal+np.random.normal(0, N0, len(signal))
 
 def draw(signal,title):
     plt.title(title)
@@ -65,6 +66,8 @@ def decode(signal):
     signal[signal<0]=0
     return signal.astype(int)
 
+def BER():
+    return 0.5*erfc(np.sqrt(1/N0))
 
 # Bit stream generator
 bit_stream=random_bit_stream_generator()
@@ -95,3 +98,6 @@ print("Error: ",error)
 
 output=pulse_shaping_filter(output,T)
 draw(output,"Output")
+
+print("BER: ",BER())
+
