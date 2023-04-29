@@ -3,12 +3,12 @@ from matplotlib import pyplot as plt
 T=10
 
 def random_bit_stream_generator():
-    temp= np.random.randint(0, 2, 3)
-    temp[temp==0]=-1
-    return temp
+    return np.random.randint(0, 2, 3)
 
 def pulse_shaping_filter(bit_stream,T):
-    return np.repeat(bit_stream, T)
+    temp= np.repeat(bit_stream, T)
+    temp[temp==0]=-1
+    return temp
 
 def channel(signal):
     return signal+np.random.normal(0, .01, len(signal))
@@ -25,43 +25,41 @@ def sampling(signal,T):
         samples[i]=signal[(i+1)*T]
     return np.sign(samples)
 
+def decode(signal):
+    signal[signal<0]=0
+    return signal
+
+def draw(signal,title):
+    plt.title(title)
+    plt.stem(signal)
+    plt.show()
 
 
+# Bit stream generator
 bit_stream=random_bit_stream_generator()
 print(bit_stream)
-x=pulse_shaping_filter(bit_stream,T)
-time=np.arange(0,len(x),1)
-plt.title("Input Signal")
-plt.step(time,x)
-plt.show()
 
-signal=channel(x)
-# print(signal)
-plt.title("Signal after channel")
-plt.plot(signal)
-plt.show()
+# Pulse shaping filter
+after_pulse_shape=pulse_shaping_filter(bit_stream,T)
+draw(after_pulse_shape,"Input Signal")
 
-time=np.arange(0,len(signal),1)
+# Channel
+after_channel=channel(after_pulse_shape)
+draw(after_channel,"Channel")
 
-# plt.step(time,x)
-# plt.show()
-after_matched_filter=receive_filter(signal,T)
-after_matched_filter=after_matched_filter/np.max(after_matched_filter)
-print(after_matched_filter)
+# Receive filter
+after_receive_filter=receive_filter(after_channel,T)
+draw(after_receive_filter,"Receive Filter")
 
-print(len(after_matched_filter))
+# Sampling
+after_sampling=sampling(after_receive_filter,T)
+print(after_sampling)
 
+# Decode
+output=decode(after_sampling)
+draw(output,"Output")
 
-# plt.plot(time,signal)
-# plt.show()
-time=np.arange(0,len(after_matched_filter),1)
-plt.title("Signal after matched filter")
-plt.plot(time,after_matched_filter)
-plt.show()
-output=sampling(after_matched_filter,T)
 print(output)
-# print(output,bit_stream)
-print(np.sum(output!=bit_stream))
-
-
-# print(np.random.normal(0, 1, len(signal)))
+# Error
+error=np.sum(output!=bit_stream)
+print("Error: ",error)
