@@ -18,6 +18,7 @@ for snr in SNR:
     Q = lambda x: 0.5*sp.erfc(x/np.sqrt(2))   # Q-function
     Pe.append(0.5*sp.erfc(snr**0.5))
 
+fig,(ax1,ax2)=plt.subplots(1,2)
 # Plot results
 plt.semilogy(SNR_dB, Pe, 'b.-')
 plt.xlabel('E/N0 (dB)')
