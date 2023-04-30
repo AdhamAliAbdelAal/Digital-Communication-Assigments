@@ -1,10 +1,9 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from math import erfc
-T=5
-N0=0.09
+T=6
+N0=1
 def random_bit_stream_generator():
-    return np.random.randint(0, 2, 5)
+    return np.random.randint(0, 2, 50)
 
 def pulse_shaping_filter(bit_stream,T):
     temp= np.repeat(bit_stream, T)
@@ -66,9 +65,6 @@ def decode(signal):
     signal[signal<0]=0
     return signal.astype(int)
 
-def BER():
-    return 0.5*erfc(np.sqrt(1/N0))
-
 # Bit stream generator
 bit_stream=random_bit_stream_generator()
 print(bit_stream)
@@ -81,23 +77,29 @@ draw(after_pulse_shape,"Input Signal")
 after_channel=channel(after_pulse_shape)
 draw(after_channel,"Channel")
 
-# Receive filter
-after_receive_filter=receive_filter(after_channel,T,"matched")
-draw_after_matched_filter(after_receive_filter,"Signal After Receive Filter")
 
-# Sampling
-after_sampling=sampling(after_receive_filter,T)
-print(after_sampling)
+def filter_with(filter_type):
+    # Receive filter
+    after_receive_filter=receive_filter(after_channel,T,filter_type)
+    draw_after_matched_filter(after_receive_filter,"Signal After Receive Filter")
 
-# Decode
-output=decode(after_sampling)
-# Error
-error=np.sum(output!=bit_stream)
-print("Error: ",error)
+    # Sampling
+    after_sampling=sampling(after_receive_filter,T)
+    print(after_sampling)
+
+    # Decode
+    output=decode(after_sampling)
+
+    # Error
+    error=np.sum(output!=bit_stream)/len(bit_stream)
 
 
-output=pulse_shaping_filter(output,T)
-draw(output,"Output")
+    output=pulse_shaping_filter(output,T)
+    draw(output,"Output")
 
-print("BER: ",BER())
+    print("BER: ",error)
+
+filter_types=["matched","impulse","linear"]
+for filter_type in filter_types:
+    filter_with(filter_type)
 
